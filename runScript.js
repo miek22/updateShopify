@@ -209,9 +209,12 @@ async function main() {
 
                 const supplierItem = supplierInventory.find(item => item[0] === sku);
                 if (!supplierItem) {
-                    unmatchedSkus.push(sku);
-                    continue;
-                }
+    if (!['this product keeps track of images 1', 'this product keeps track of images 2'].includes(sku)) {
+        unmatchedSkus.push(sku);
+    }
+    continue;
+}
+
                 if (!inventoryItemId) continue;
 
                 const supplierQty = supplierItem[1];
