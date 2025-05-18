@@ -7,7 +7,7 @@ const AUTH_TOKEN = Buffer.from(process.env.SUPPLIER_API_KEY).toString('base64');
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY;
 const SHOPIFY_API_PASSWORD = process.env.SHOPIFY_API_PASSWORD;
 const SHOPIFY_SHOP_NAME = process.env.SHOPIFY_SHOP_NAME;
-const SHOPIFY_LOCATION_ID = `gid://shopify/Location/72537145414`; // hardcoded with correct format
+const SHOPIFY_LOCATION_ID = process.env.SHOPIFY_LOCATION_ID;
 
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
