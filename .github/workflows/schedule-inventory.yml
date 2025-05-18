@@ -1,0 +1,29 @@
+name: Scheduled Inventory Update
+
+on:
+  schedule:
+    - cron: '45 * * * *'  # Runs every hour at minute 0 UTC
+  workflow_dispatch: # Allow manual trigger in GitHub UI
+
+jobs:
+  update-inventory:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install node-fetch@2
+
+      - name: Run inventory update script
+        env:
+          SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
+          SHOPIFY_API_PASSWORD: ${{ secrets.SHOPIFY_API_PASSWORD }}
+          SHOPIFY_SHOP_NAME: ${{ secrets.SHOPIFY_SHOP_NAME }}
+        run: node runScript.js
