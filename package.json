@@ -1,0 +1,13 @@
+{
+  "name": "updateShopify",
+  "version": "1.0.0",
+  "description": "Inventory update script for Shopify",
+  "main": "runScript.js",
+  "scripts": {
+    "start": "node runScript.js"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "nodemailer": "^6.9.3",
+  }
+}
