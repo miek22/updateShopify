@@ -5,6 +5,10 @@ on:
     - cron: '45 * * * *'  # Every hour at minute 0 UTC
   workflow_dispatch: # Allows manual trigger
 
+concurrency:
+  group: inventory-update
+  cancel-in-progress: true
+
 jobs:
   update-inventory:
     runs-on: ubuntu-latest
