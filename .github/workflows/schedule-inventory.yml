@@ -1,5 +1,4 @@
 name: Scheduled Inventory Update
-run: sleep 30
 
 on:
   schedule:
