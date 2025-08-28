@@ -1,4 +1,4 @@
-//07232025
+//08272025
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 
@@ -31,7 +31,7 @@ async function fetchSupplierInventory() {
         return [];
     }
 }
-
+/* og
 async function fetchShopifyProducts(cursor = null) {
     const query = `
     query ($cursor: String) {
@@ -94,6 +94,74 @@ async function fetchShopifyProducts(cursor = null) {
         return data.data.products;
     } catch (error) {
         //console.error('Error fetching Shopify products:', error.response?.data || error.message);
+        return { edges: [], pageInfo: { hasNextPage: false } };
+    }
+}
+*/
+async function fetchShopifyProducts(cursor = null) {
+    const query = `
+    query ($cursor: String, $queryString: String!) {
+      products(first: 100, after: $cursor, query: $queryString) {
+        edges {
+          cursor
+          node {
+            id
+            vendor
+            variants(first: 1) {
+              edges {
+                node {
+                  id
+                  sku
+                  inventoryQuantity
+                  inventoryItem {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }`;
+
+    // The GraphQL query string filters products by vendor
+    const variables = {
+        cursor,
+        queryString: 'vendor:TR-AU'
+    };
+
+    try {
+        const response = await axios.post(
+            GRAPHQL_API_URL,
+            { query, variables },
+            {
+                headers: {
+                    'Authorization': `Basic ${Buffer.from(`${SHOPIFY_API_KEY}:${SHOPIFY_API_PASSWORD}`).toString('base64')}`,
+                    'Content-Type': 'application/json',
+                }
+            }
+        );
+
+        const data = response.data;
+
+        // Retry on throttle
+        if (data.errors?.some(e => e.extensions?.code === "THROTTLED")) {
+            const available = data.extensions?.cost?.throttleStatus?.currentlyAvailable || 0;
+            const waitTime = Math.ceil((101 - available) / 100) * 1000;
+            await delay(waitTime);
+            return await fetchShopifyProducts(cursor);
+        }
+
+        if (!data.data?.products) {
+            return { edges: [], pageInfo: { hasNextPage: false } };
+        }
+
+        return data.data.products;
+    } catch (error) {
         return { edges: [], pageInfo: { hasNextPage: false } };
     }
 }
