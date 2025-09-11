@@ -35,7 +35,7 @@ async function fetchSupplierInventory() {
 async function fetchShopifyProducts(cursor = null) {
     const query = `
     query ($cursor: String) {
-      products(first: 100, after: $cursor) {
+  products(first: 100, after: $cursor, query: "vendor:'TR-AU'") {
         edges {
           cursor
           node {
