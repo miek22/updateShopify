@@ -1,4 +1,4 @@
-//08272025
+//11042025
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 
@@ -285,7 +285,7 @@ async function main() {
 
                 if (!inventoryItemId) continue;
 
-                const supplierQty = supplierItem[1];
+                const supplierQty = Math.floor(supplierItem[1]);
 
                 if (
                     (supplierQty <= 1 && supplierQty !== currentQty) ||
