@@ -48,7 +48,9 @@ async function fetchShopifyProducts(cursor = null) {
                   inventoryQuantity
                   inventoryItem {
                     id
-                  }
+                    inventoryLevel(locationId: $locationId) {
+                      available
+                    }
                 }
               }
             }
@@ -272,7 +274,7 @@ async function main() {
         for (const product of edges) {
             for (const variant of product.node.variants.edges) {
                 const sku = variant.node.sku;
-                const currentQty = variant.node.inventoryQuantity;
+                const currentQty = variant.node.inventoryItem?.inventoryLevel?.available ?? 0;
                 const inventoryItemId = variant.node.inventoryItem?.id;
 
                 const supplierItem = supplierInventory.find(item => item[0] === sku);
