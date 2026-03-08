@@ -100,7 +100,7 @@ async function fetchShopifyProducts(cursor = null) {
 */
 async function fetchShopifyProducts(cursor = null) {
     const query = `
-    query ($cursor: String, $queryString: String!) {
+    query ($cursor: String, $queryString: String!, $locationId: ID!) {
       products(first: 100, after: $cursor, query: $queryString) {
         edges {
           cursor
@@ -112,9 +112,11 @@ async function fetchShopifyProducts(cursor = null) {
                 node {
                   id
                   sku
-                  inventoryQuantity
                   inventoryItem {
                     id
+                    inventoryLevel(locationId: $locationId) {
+                      available
+                    }
                   }
                 }
               }
@@ -128,10 +130,10 @@ async function fetchShopifyProducts(cursor = null) {
       }
     }`;
 
-    // The GraphQL query string filters products by vendor
     const variables = {
         cursor,
-        queryString: 'vendor:TR-AU'
+        queryString: "vendor:TR-AU",
+        locationId: SHOPIFY_LOCATION_ID
     };
 
     try {
@@ -140,15 +142,14 @@ async function fetchShopifyProducts(cursor = null) {
             { query, variables },
             {
                 headers: {
-                    'Authorization': `Basic ${Buffer.from(`${SHOPIFY_API_KEY}:${SHOPIFY_API_PASSWORD}`).toString('base64')}`,
-                    'Content-Type': 'application/json',
+                    Authorization: `Basic ${Buffer.from(`${SHOPIFY_API_KEY}:${SHOPIFY_API_PASSWORD}`).toString("base64")}`,
+                    "Content-Type": "application/json",
                 }
             }
         );
 
         const data = response.data;
 
-        // Retry on throttle
         if (data.errors?.some(e => e.extensions?.code === "THROTTLED")) {
             const available = data.extensions?.cost?.throttleStatus?.currentlyAvailable || 0;
             const waitTime = Math.ceil((101 - available) / 100) * 1000;
@@ -157,14 +158,15 @@ async function fetchShopifyProducts(cursor = null) {
         }
 
         if (!data.data?.products) {
-            return { edges: [], pageInfo: { hasNextPage: false } };
+            return { edges: [], pageInfo: { hasNextPage: false, endCursor: null } };
         }
 
         return data.data.products;
     } catch (error) {
-        return { edges: [], pageInfo: { hasNextPage: false } };
+        return { edges: [], pageInfo: { hasNextPage: false, endCursor: null } };
     }
 }
+
 
 async function adjustShopifyInventory(inventoryAdjustments) {
     const mutation = `
@@ -272,7 +274,7 @@ async function main() {
         for (const product of edges) {
             for (const variant of product.node.variants.edges) {
                 const sku = variant.node.sku;
-                const currentQty = variant.node.inventoryQuantity;
+                const currentQty = Number(variant.node.inventoryItem?.inventoryLevel?.available ?? 0);
                 const inventoryItemId = variant.node.inventoryItem?.id;
 
                 const supplierItem = supplierInventory.find(item => item[0] === sku);
