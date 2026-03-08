@@ -204,14 +204,14 @@ async function main() {
 
         const currentQty = Number(variant.node.inventoryItem?.inventoryLevel?.available ?? 0);
 
-        // Only update when crossing the 1/2 threshold boundary
-        const supplierLow = supplierQty <= 1;
-        const currentLow = currentQty <= 1;
+if (
+  (supplierQty <= 1 && supplierQty !== currentQty) ||
+  (supplierQty >= 2 && currentQty <= 1)
+) {
+  const delta = supplierQty - currentQty;
+  adjustments.push({ inventoryItemId, delta });
+}
 
-        if (supplierLow !== currentLow) {
-          const delta = supplierQty - currentQty;
-          adjustments.push({ inventoryItemId, delta });
-        }
       }
     }
 
