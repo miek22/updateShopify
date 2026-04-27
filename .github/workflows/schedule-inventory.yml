@@ -2,7 +2,7 @@ name: Scheduled Inventory Update
 
 on:
   schedule:
-    - cron: '45 * * * *'  # Every hour at minute 0 UTC
+    - cron: '45 */2 * * *'
   workflow_dispatch: # Allows manual trigger
 
 concurrency:
