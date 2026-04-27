@@ -1,4 +1,4 @@
-//12092025
+//04262026
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 
@@ -13,7 +13,7 @@ const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_TO = process.env.EMAIL_TO;
 
-const GRAPHQL_API_URL = `https://${SHOPIFY_SHOP_NAME}.myshopify.com/admin/api/2023-10/graphql.json`;
+const GRAPHQL_API_URL = `https://${SHOPIFY_SHOP_NAME}.myshopify.com/admin/api/2026-04/graphql.json`;
 
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
