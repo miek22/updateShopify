@@ -204,19 +204,25 @@ async function adjustShopifyInventory(inventoryAdjustments) {
             }
         );
 
+        console.log("Shopify inventory response:", JSON.stringify(response.data, null, 2));
+
         if (response.data.errors?.length) {
-            //console.error('Shopify mutation errors:', JSON.stringify(response.data.errors, null, 2));
-        } else {
-            inventoryAdjustments.forEach(item => {
-                //console.log(`Inventory adjusted for InventoryItem ID: '${item.inventoryItemId}', Delta: ${item.delta}`);
-            });
+            console.error("Shopify mutation errors:", JSON.stringify(response.data.errors, null, 2));
         }
 
-        if (response.data.data?.inventoryAdjustQuantities?.userErrors?.length) {
-            //console.warn('Shopify user errors:', response.data.data.inventoryAdjustQuantities.userErrors);
+        const userErrors = response.data.data?.inventoryAdjustQuantities?.userErrors || [];
+
+        if (userErrors.length) {
+            console.error("Shopify user errors:", JSON.stringify(userErrors, null, 2));
+        } else {
+            console.log(`Shopify accepted ${inventoryAdjustments.length} inventory adjustment(s).`);
         }
+
     } catch (err) {
-        //console.error("Shopify mutation request failed:", err.response?.data || err.message);
+        console.error("Shopify mutation request failed:");
+        console.error("Status:", err.response?.status);
+        console.error("Data:", JSON.stringify(err.response?.data, null, 2));
+        console.error("Message:", err.message);
     }
 }
 
