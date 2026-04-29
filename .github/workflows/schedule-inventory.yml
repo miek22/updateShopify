@@ -25,9 +25,10 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run inventory update script
+      - name: Run alternating script
         env:
           SUPPLIER_API_URL_INVENTORY: ${{ secrets.SUPPLIER_API_URL_INVENTORY }}
+          SUPPLIER_API_URL_INVENTORY_CAL: ${{ secrets.SUPPLIER_API_URL_INVENTORY_CAL }}
           SUPPLIER_API_KEY: ${{ secrets.SUPPLIER_API_KEY }}
           SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
           SHOPIFY_API_PASSWORD: ${{ secrets.SHOPIFY_API_PASSWORD }}
@@ -36,4 +37,15 @@ jobs:
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           SHOPIFY_LOCATION_ID: ${{ secrets.SHOPIFY_LOCATION_ID }}
-        run: node runScript.js
+          SHOPIFY_LOCATION_ID_CAL: ${{ secrets.SHOPIFY_LOCATION_ID_CAL }}
+        run: |
+          HOUR=$(date -u +%H)
+          echo "Current UTC hour: $HOUR"
+
+          if [ $((10#$HOUR % 2)) -eq 0 ]; then
+            echo "Running script A"
+            node runScript.js
+          else
+            echo "Running script C"
+            node runScriptC.js
+          fi
