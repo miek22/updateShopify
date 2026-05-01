@@ -185,10 +185,11 @@ async function adjustShopifyInventory(inventoryAdjustments) {
             reason: "correction",
             name: "available",
             changes: inventoryAdjustments.map(item => ({
-                delta: item.delta,
-                locationId: SHOPIFY_LOCATION_ID,
-                inventoryItemId: item.inventoryItemId,
-            }))
+    delta: item.delta,
+    locationId: SHOPIFY_LOCATION_ID,
+    inventoryItemId: item.inventoryItemId,
+    changeFromQuantity: item.currentQty
+}))
         }
     };
 
@@ -298,7 +299,7 @@ async function main() {
                     (supplierQty >= 2 && currentQty <= 1)
                 ) {
                     const delta = supplierQty - currentQty;
-                    adjustments.push({ inventoryItemId, delta });
+                    adjustments.push({ inventoryItemId, delta, currentQty });
                 }
             }
         }
