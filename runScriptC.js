@@ -168,17 +168,17 @@ async function fetchShopifyProducts(cursor = null) {
 
 async function adjustShopifyInventory(inventoryAdjustments) {
     const mutation = `
-    mutation adjustInventory($input: InventoryAdjustQuantitiesInput!) @idempotent {
-      inventoryAdjustQuantities(input: $input) {
-        inventoryAdjustmentGroup {
-          id
-        }
-        userErrors {
-          field
-          message
-        }
-      }
-    }`;
+mutation adjustInventory($input: InventoryAdjustQuantitiesInput!, $key: String!) {
+  inventoryAdjustQuantities(input: $input) @idempotent(key: $key) {
+    inventoryAdjustmentGroup {
+      id
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}`;
 
     const input = {
         input: {
@@ -196,7 +196,13 @@ async function adjustShopifyInventory(inventoryAdjustments) {
     try {
         const response = await axios.post(
             GRAPHQL_API_URL,
-            { query: mutation, variables: input },
+            {
+  query: mutation,
+  variables: {
+    input: input.input,
+    key: `inventory-adjust-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  }
+},
             {
                 headers: {
                     'Authorization': `Basic ${Buffer.from(`${SHOPIFY_API_KEY}:${SHOPIFY_API_PASSWORD}`).toString('base64')}`,
