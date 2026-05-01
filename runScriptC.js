@@ -313,7 +313,7 @@ async function main() {
         if (adjustments.length > 0) {
             console.log(`Adjusting ${adjustments.length} inventory items...`);
             await adjustShopifyInventory(adjustments);
-            await delay(1000);
+            await delay(300);
         }
     }
 
