@@ -168,7 +168,7 @@ async function fetchShopifyProducts(cursor = null) {
 
 async function adjustShopifyInventory(inventoryAdjustments) {
     const mutation = `
-    mutation adjustInventory($input: InventoryAdjustQuantitiesInput!) {
+    mutation adjustInventory($input: InventoryAdjustQuantitiesInput!) @idempotent {
       inventoryAdjustQuantities(input: $input) {
         inventoryAdjustmentGroup {
           id
