@@ -2,12 +2,13 @@
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 
-const SUPPLIER_API_URL_INVENTORY = process.env.SUPPLIER_API_URL_INVENTORY_CAL;
+const SUPPLIER_API_URL_INVENTORY = process.env.SUPPLIER_API_URL_INVENTORY;
+const SUPPLIER_API_URL_INVENTORY_CAL = process.env.SUPPLIER_API_URL_INVENTORY_CAL;
 const AUTH_TOKEN = Buffer.from(process.env.SUPPLIER_API_KEY).toString('base64');
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY;
 const SHOPIFY_API_PASSWORD = process.env.SHOPIFY_API_PASSWORD;
 const SHOPIFY_SHOP_NAME = process.env.SHOPIFY_SHOP_NAME;
-const SHOPIFY_LOCATION_ID = process.env.SHOPIFY_LOCATION_ID_CAL;
+const SHOPIFY_LOCATION_ID = process.env.SHOPIFY_LOCATION_ID;
 
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
@@ -18,86 +19,36 @@ const GRAPHQL_API_URL = `https://${SHOPIFY_SHOP_NAME}.myshopify.com/admin/api/20
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 async function fetchSupplierInventory() {
-    try {
-        const response = await axios.get(SUPPLIER_API_URL_INVENTORY, {
-            headers: {
-                'Authorization': `Basic ${AUTH_TOKEN}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        return response.data?.inventory || [];
-    } catch (err) {
-        console.error("Error fetching supplier inventory:", err.response?.data || err.message);
-        return [];
-    }
-}
-/* og
-async function fetchShopifyProducts(cursor = null) {
-    const query = `
-    query ($cursor: String) {
-  products(first: 100, after: $cursor, query: "vendor:'TR-AU'") {
-        edges {
-          cursor
-          node {
-            id
-            variants(first: 1) {
-              edges {
-                node {
-                  id
-                  sku
-                  inventoryQuantity
-                  inventoryItem {
-                    id
-                  }
-                }
-              }
-            }
-          }
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-      }
-    }`;
-
-    const variables = { cursor };
-
-    try {
-        const response = await axios.post(
-            GRAPHQL_API_URL,
-            { query, variables },
-            {
+    async function fetchOne(url, label) {
+        try {
+            const response = await axios.get(url, {
                 headers: {
-                    'Authorization': `Basic ${Buffer.from(`${SHOPIFY_API_KEY}:${SHOPIFY_API_PASSWORD}`).toString('base64')}`,
-                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${AUTH_TOKEN}`,
+                    'Content-Type': 'application/json'
                 }
-            }
-        );
+            });
 
-        const data = response.data;
-
-        // Retry on throttle
-        if (data.errors?.some(e => e.extensions?.code === "THROTTLED")) {
-            const available = data.extensions?.cost?.throttleStatus?.currentlyAvailable || 0;
-            const waitTime = Math.ceil((101 - available) / 100) * 1000;
-            //console.warn(`Throttled. Waiting ${waitTime} ms before retrying...`);
-            await delay(waitTime);
-            return await fetchShopifyProducts(cursor);
+            return response.data?.inventory || [];
+        } catch (err) {
+            console.error(`Error fetching supplier inventory ${label}:`, err.response?.data || err.message);
+            return [];
         }
-
-        if (!data.data?.products) {
-            //console.error('Invalid Shopify response structure:', JSON.stringify(data, null, 2));
-            return { edges: [], pageInfo: { hasNextPage: false } };
-        }
-
-        return data.data.products;
-    } catch (error) {
-        //console.error('Error fetching Shopify products:', error.response?.data || error.message);
-        return { edges: [], pageInfo: { hasNextPage: false } };
     }
+
+    const inventoryA = await fetchOne(SUPPLIER_API_URL_INVENTORY, "A");
+    const inventoryB = await fetchOne(SUPPLIER_API_URL_INVENTORY_CAL, "CAL");
+
+    const combinedMap = new Map();
+
+    for (const item of [...inventoryA, ...inventoryB]) {
+        const sku = item[0];
+        const qty = Number(item[1]) || 0;
+
+        combinedMap.set(sku, (combinedMap.get(sku) || 0) + qty);
+    }
+
+    return Array.from(combinedMap.entries());
 }
-*/
 async function fetchShopifyProducts(cursor = null) {
     const query = `
     query ($cursor: String, $queryString: String!) {
