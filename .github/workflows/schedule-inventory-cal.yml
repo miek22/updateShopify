@@ -1,4 +1,4 @@
-name: Scheduled Inventory Update
+name: Scheduled Inventory Update CAL
 
 on:
   schedule:
