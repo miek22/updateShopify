@@ -247,7 +247,7 @@ async function sendUnmatchedSkusEmail(unmatchedSkus) {
     const mailOptions = {
         from: `"Inventory Sync" <${EMAIL_USER}>`,
         to: EMAIL_TO,
-        subject: 'Unmatched SKUs Found in Shopify',
+        subject: 'Unmatched SKUs Found in Shopify - CAL',
         text: `The following SKUs were found in Shopify but not in your supplier inventory:\n\n${unmatchedSkus.join('\n')}`
     };
 
