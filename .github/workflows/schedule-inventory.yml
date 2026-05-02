@@ -39,13 +39,15 @@ jobs:
           SHOPIFY_LOCATION_ID: ${{ secrets.SHOPIFY_LOCATION_ID }}
           SHOPIFY_LOCATION_ID_CAL: ${{ secrets.SHOPIFY_LOCATION_ID_CAL }}
         run: |
-          HOUR=$(date -u +%H)
-          echo "Current UTC hour: $HOUR"
+  HOUR=$(date -u +%H)
+  HOUR_INT=$((10#$HOUR))  # remove leading zero issues
 
-          if [ $((10#$HOUR % 2)) -eq 0 ]; then
-            echo "Running script A"
-            node runScript.js
-          else
-            echo "Running script C"
-            node runScriptC.js
-          fi
+  echo "Current UTC hour: $HOUR_INT"
+
+  if (( HOUR_INT % 2 == 0 )); then
+    echo "Running script A (even hour)"
+    node runScript.js
+  else
+    echo "Running script C (odd hour)"
+    node runScriptC.js
+  fi
