@@ -2,7 +2,7 @@ name: Scheduled Inventory Update
 
 on:
   schedule:
-    - cron: '45 */3 * * *'
+    - cron: '45 0,2,4,6,8,10,12,14,16,18,20,22 * * *'
   workflow_dispatch: # Allows manual trigger
 
 concurrency:
@@ -25,10 +25,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run alternating script
+      - name: Run inventory update script
         env:
           SUPPLIER_API_URL_INVENTORY: ${{ secrets.SUPPLIER_API_URL_INVENTORY }}
-          SUPPLIER_API_URL_INVENTORY_CAL: ${{ secrets.SUPPLIER_API_URL_INVENTORY_CAL }}
           SUPPLIER_API_KEY: ${{ secrets.SUPPLIER_API_KEY }}
           SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
           SHOPIFY_API_PASSWORD: ${{ secrets.SHOPIFY_API_PASSWORD }}
@@ -37,17 +36,4 @@ jobs:
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           SHOPIFY_LOCATION_ID: ${{ secrets.SHOPIFY_LOCATION_ID }}
-          SHOPIFY_LOCATION_ID_CAL: ${{ secrets.SHOPIFY_LOCATION_ID_CAL }}
-        run: |
-  HOUR=$(date -u +%H)
-  HOUR_INT=$((10#$HOUR))  # remove leading zero issues
-
-  echo "Current UTC hour: $HOUR_INT"
-
-  if (( HOUR_INT % 2 == 0 )); then
-    echo "Running script A (even hour)"
-    node runScript.js
-  else
-    echo "Running script C (odd hour)"
-    node runScriptC.js
-  fi
+        run: node runScript.js
