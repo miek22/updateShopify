@@ -1,0 +1,39 @@
+name: Scheduled Inventory Update
+
+on:
+  schedule:
+    - cron: '45 0,2,4,6,8,10,12,14,16,18,20,22 * * *'
+  workflow_dispatch: # Allows manual trigger
+
+concurrency:
+  group: inventory-update
+  cancel-in-progress: true
+
+jobs:
+  update-inventory:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run inventory update script
+        env:
+          SUPPLIER_API_URL_INVENTORY: ${{ secrets.SUPPLIER_API_URL_INVENTORY_CAL }}
+          SUPPLIER_API_KEY: ${{ secrets.SUPPLIER_API_KEY }}
+          SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
+          SHOPIFY_API_PASSWORD: ${{ secrets.SHOPIFY_API_PASSWORD }}
+          SHOPIFY_SHOP_NAME: ${{ secrets.SHOPIFY_SHOP_NAME }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          SHOPIFY_LOCATION_ID: ${{ secrets.SHOPIFY_LOCATION_ID_CAL }}
+        run: node runScriptC.js
